@@ -3,3 +3,4 @@ python-dotenv
 flask-restx
 dnspython
 flask-cors
+requests
