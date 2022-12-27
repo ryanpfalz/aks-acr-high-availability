@@ -1,0 +1,29 @@
+name: Config Workflow
+
+on:
+    workflow_call:
+        outputs:
+            variables:
+                description: "Configuration values"
+                value: ${{ jobs.configuration.outputs.variables }}
+
+jobs:
+    configuration:
+        name: "Get Configuration"
+        runs-on: ubuntu-latest
+        steps:
+            # checkout the repo (need to do this within each job)
+            - name: "Checkout Repo"
+              uses: actions/checkout@v2
+
+            - id: set_vars
+              name: "Get variables"
+              shell: pwsh
+              run: |
+                  $config = Get-Content "../${{ github.event.repository.name }}/devops/config/variables.json" | ConvertFrom-Json
+                  $jsonEnvConfig = $config.$($config.env) | ConvertTo-Json -Compress # compress saves to single line, which is required by fromJson()
+                  echo $jsonEnvConfig
+                  echo "variables=$jsonEnvConfig" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+
+        outputs:
+            variables: ${{ env.variables }}

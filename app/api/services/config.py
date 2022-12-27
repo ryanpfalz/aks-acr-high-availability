@@ -10,8 +10,8 @@ class Config:
         with open(f'{base_dir}/app_settings.json') as f:
             configuration = json.load(f)
 
-        # self._var = configuration['key']
+        self._version = configuration['version']
 
-    # @property
-    # def property_name(self):
-    #     return self._var
+    @property
+    def version(self):
+        return self._version

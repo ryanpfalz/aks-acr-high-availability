@@ -1,0 +1,15 @@
+name: Green Cluster CI/CD Workflow
+on:
+    push:
+        branches:
+            - "NA" # prevent action
+            # - "ingresscontroller"
+
+jobs:
+    configuration:
+        name: "Get configuration"
+        uses: ./.github/workflows/config.yml
+
+    deploy:
+        name: "Build and deploy"
+        uses: ./.github/workflows/green-cicd.yml
