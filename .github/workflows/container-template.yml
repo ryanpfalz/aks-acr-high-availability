@@ -119,7 +119,7 @@ jobs:
             # deploy to cluster depending on input
             - name: "Deploy from ACR to AKS"
               run: |
-                  if (${{ inputs.cluster }} -eq 'green') {
+                  if ("${{ inputs.cluster }}" -eq "green") {
                       $aksClusterName = ${{ fromJson(needs.configuration.outputs.variables).aksClusterName_green }}
                   }
                   else {
