@@ -2,13 +2,16 @@ param(
     [Parameter()]
     [String]$clusterParam
 )
+$clusterParam = 'blue'
 
 $origPath = Get-Location
 $origPath = $origPath.Path
 Set-Location $PSScriptRoot
 
-$config = Get-Content "../../config/variables.json" | ConvertFrom-Json
+$config = Get-Content "../config/variables.json" | ConvertFrom-Json
 $envConfig = $config.$($config.env)
+
+# blue configuration will be the primary region for common resources (RG, ACR, etc.)
 
 $rgName = $envConfig.resourceGroup
 $acrName = $envConfig.containerRegistryName
@@ -22,8 +25,6 @@ else {
     $aksClusterName = $envConfig.aksClusterName_blue
 }
 
-# blue configuration will be the primary region for common resources (RG, ACR, etc.)
-
 # RG deploy
 Write-Host "Creating RG..."
 az group create --name $rgName --location $location
@@ -31,7 +32,7 @@ Write-Host "Created RG"
 
 Write-Host "Creating AKS cluster..."
 # create AKS cluster and integrate with ACR
-az aks create --resource-group $rgName --name $aksClusterName --node-count 1 --node-vm-size b2s --generate-ssh-keys --attach-acr $acrName --location $location
+az aks create --resource-group $rgName --name $aksClusterName --node-count 1 --node-vm-size standard_d2plds_v5 --generate-ssh-keys --attach-acr $acrName --location $location
 
 az aks get-credentials --resource-group $rgName --name $aksClusterName
 
@@ -46,3 +47,7 @@ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
 helm install ingress-nginx ingress-nginx/ingress-nginx --create-namespace --namespace $ingressNamespace
 Write-Host "Created AKS cluster"
+
+# to get external IP of the ingress controller, run:
+# $ingressObject = $(kubectl get svc -n $ingressNamespace -ojson | ConvertFrom-Json)
+# $ingressIp = $($ingressObject.items | ForEach-Object { $_.status.loadBalancer.ingress.ip })
