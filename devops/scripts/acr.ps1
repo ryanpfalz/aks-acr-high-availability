@@ -2,15 +2,15 @@ $origPath = Get-Location
 $origPath = $origPath.Path
 Set-Location $PSScriptRoot
 
-$config = Get-Content "../../config/variables.json" | ConvertFrom-Json
+$config = Get-Content "../config/variables.json" | ConvertFrom-Json
 $envConfig = $config.$($config.env)
+
+# blue configuration will be the primary region for common resources (RG, ACR, etc.)
 
 $rgName = $envConfig.resourceGroup
 $locationPrimary = $envConfig.location_blue
 $locationSecondary = $envConfig.location_green
 $acrName = $envConfig.containerRegistryName
-
-# blue configuration will be the primary region for common resources (RG, ACR, etc.)
 
 # RG deploy
 Write-Host "Creating RG..."
@@ -21,7 +21,10 @@ Write-Host "Created RG"
 Write-Host "Creating Container Registry..."
 
 # SKU needs to be Premium for geo replication; set primary location first then replicate
-az acr create --name $acrName --resource-group $rgName --location $locationPrimary --sku Premium
-az acr replication create -r $acrName -l $locationSecondary
+# as of development, zone reduncancy is under preview and can only be enabled at creation time
+az acr create --name $acrName --resource-group $rgName --location $locationPrimary --sku Premium --zone-redundancy Enabled
+
+# alternatively set this on map in portal
+az acr replication create --resource-group $rgName --location $locationSecondary
 
 Write-Host "Created Container Registry"

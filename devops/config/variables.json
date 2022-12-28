@@ -4,7 +4,7 @@
         "resourceGroup":"ms-ha-demo",
         "containerRegistryName": "mshaacr",
         "location_green": "eastus2",
-        "location_blue": "central",
+        "location_blue": "centralus",
         "aksClusterName_green":"mshaaksgreen",
         "aksClusterName_blue":"mshaaksblue",
         "trafficManager": "mshaendpoint"
