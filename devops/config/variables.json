@@ -2,6 +2,7 @@
     "env": "dev",
     "dev": {
         "resourceGroup": "ms-ha-demo",
+        "servicePrincipalName": "App1",
         "containerRegistryName": "mshaacr",
         "location_green": "eastus2",
         "location_blue": "centralus",
