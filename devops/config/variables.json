@@ -1,4 +1,12 @@
 {
     "env": "dev",
-    "dev": {}
+    "dev": {
+        "resourceGroup":"ms-ha-demo",
+        "containerRegistryName": "mshaacr",
+        "location_green": "eastus2",
+        "location_blue": "central",
+        "aksClusterName_green":"mshaaksgreen",
+        "aksClusterName_blue":"mshaaksblue",
+        "trafficManager": "mshaendpoint"
+    }
 }

@@ -31,7 +31,7 @@ Write-Host "Created RG"
 
 Write-Host "Creating AKS cluster..."
 # create AKS cluster and integrate with ACR
-az aks create --resource-group $rgName --name $aksClusterName --node-count 1 --node-vm-size standard_a2_v2 --generate-ssh-keys --attach-acr $acrName --location $location
+az aks create --resource-group $rgName --name $aksClusterName --node-count 1 --node-vm-size b2s --generate-ssh-keys --attach-acr $acrName --location $location
 
 az aks get-credentials --resource-group $rgName --name $aksClusterName
 
