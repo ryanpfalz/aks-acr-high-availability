@@ -18,6 +18,7 @@ spec:
             containers:
                 - name: py-api
                   image: <replace acrname.azurecr.io/microserviceApiImageName:github.sha>
+                  #   image: mshaacr.azurecr.io/mshademoapi:ea818dea51f391bdd30dd8119f1bb43cd1db6754
                   ports:
                       #   - containerPort: 80
                       - containerPort: 8080
