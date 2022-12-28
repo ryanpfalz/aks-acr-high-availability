@@ -120,10 +120,10 @@ jobs:
             - name: "Deploy from ACR to AKS"
               run: |
                   if ("${{ inputs.cluster }}" -eq "green") {
-                      $aksClusterName = ${{ fromJson(needs.configuration.outputs.variables).aksClusterName_green }}
+                      $aksClusterName = "${{ fromJson(needs.configuration.outputs.variables).aksClusterName_green }}"
                   }
                   else {
-                      $aksClusterName = ${{ fromJson(needs.configuration.outputs.variables).aksClusterName_blue }}
+                      $aksClusterName = "${{ fromJson(needs.configuration.outputs.variables).aksClusterName_blue }}"
                   }
 
                   az aks get-credentials -g ${{ fromJson(needs.configuration.outputs.variables).resourceGroup }} -n $aksClusterName
