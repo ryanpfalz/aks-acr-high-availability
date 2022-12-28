@@ -6,10 +6,8 @@ on:
             # - "ingresscontroller"
 
 jobs:
-    configuration:
-        name: "Get configuration"
-        uses: ./.github/workflows/config.yml
-
     deploy:
         name: "Build and deploy"
-        uses: ./.github/workflows/green-cicd.yml
+        uses: ./.github/workflows/container-template.yml
+        with:
+            cluster: green

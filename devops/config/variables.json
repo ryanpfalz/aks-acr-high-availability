@@ -1,12 +1,14 @@
 {
     "env": "dev",
     "dev": {
-        "resourceGroup":"ms-ha-demo",
+        "resourceGroup": "ms-ha-demo",
         "containerRegistryName": "mshaacr",
         "location_green": "eastus2",
         "location_blue": "centralus",
-        "aksClusterName_green":"mshaaksgreen",
-        "aksClusterName_blue":"mshaaksblue",
-        "trafficManager": "mshaendpoint"
+        "aksClusterName_green": "mshaaksgreen",
+        "aksClusterName_blue": "mshaaksblue",
+        "trafficManager": "mshaendpoint",
+        "pythonVersion": "3.9",
+        "microserviceApiImageName": "mshademoapi"
     }
 }

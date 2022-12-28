@@ -22,9 +22,13 @@ Write-Host "Creating Container Registry..."
 
 # SKU needs to be Premium for geo replication; set primary location first then replicate
 # as of development, zone reduncancy is under preview and can only be enabled at creation time
-az acr create --name $acrName --resource-group $rgName --location $locationPrimary --sku Premium --zone-redundancy Enabled
+az acr create --name $acrName --resource-group $rgName --location $locationPrimary --sku Premium --zone-redundancy Enabled --admin-enabled true
 
 # alternatively set this on map in portal
 az acr replication create --resource-group $rgName --location $locationSecondary
 
 Write-Host "Created Container Registry"
+
+# programmatically get credentials:
+# $acrUsername =  $(az acr credential show --name $acrName --query "username").Replace("`"","")
+# $acrPassword =  $(az acr credential show --name $acrName --query "passwords[0].value").Replace("`"","")
