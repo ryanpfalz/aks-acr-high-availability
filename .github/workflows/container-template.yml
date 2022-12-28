@@ -80,7 +80,7 @@ jobs:
             - name: Build production image
               uses: docker/build-push-action@v3
               with:
-                  # context: ./app
+                  context: ./app/api
                   builder: ${{ steps.buildx.outputs.name }}
                   file: ./app/Dockerfile
                   # Set the desired build target here
