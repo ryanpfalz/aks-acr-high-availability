@@ -11,3 +11,4 @@ jobs:
         uses: ./.github/workflows/container-template.yml
         with:
             cluster: blue
+        secrets: inherit
