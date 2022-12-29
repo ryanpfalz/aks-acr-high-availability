@@ -4,7 +4,7 @@ on:
         inputs:
             cluster:
                 description: "Either blue or green"
-                default: "blue"
+                default: "green"
                 required: true
                 type: string
             # outputs:

@@ -2,7 +2,7 @@ param(
     [Parameter()]
     [String]$clusterParam
 )
-$clusterParam = 'blue'
+$clusterParam = 'green'
 
 $origPath = Get-Location
 $origPath = $origPath.Path
@@ -11,7 +11,7 @@ Set-Location $PSScriptRoot
 $config = Get-Content "../config/variables.json" | ConvertFrom-Json
 $envConfig = $config.$($config.env)
 
-# blue configuration will be the primary region for common resources (RG, ACR, etc.)
+# green configuration will be the primary region for common resources (RG, ACR, etc.)
 
 $rgName = $envConfig.resourceGroup
 $acrName = $envConfig.containerRegistryName
@@ -19,10 +19,12 @@ $acrName = $envConfig.containerRegistryName
 if ($clusterParam.ToLower() -eq 'green') {
     $location = $envConfig.location_green
     $aksClusterName = $envConfig.aksClusterName_green
+    $vmSize = "standard_d2"
 }
 else {
     $location = $envConfig.location_blue
     $aksClusterName = $envConfig.aksClusterName_blue
+    $vmSize = "standard_a2_v2"
 }
 
 # RG deploy
@@ -32,7 +34,7 @@ Write-Host "Created RG"
 
 Write-Host "Creating AKS cluster..."
 # create AKS cluster and integrate with ACR
-az aks create --resource-group $rgName --name $aksClusterName --node-count 1 --node-vm-size standard_d2plds_v5 --generate-ssh-keys --attach-acr $acrName --location $location
+az aks create --resource-group $rgName --name $aksClusterName --node-count 1 --node-vm-size $vmSize --generate-ssh-keys --attach-acr $acrName --location $location
 
 az aks get-credentials --resource-group $rgName --name $aksClusterName
 

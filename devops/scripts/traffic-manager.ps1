@@ -5,11 +5,11 @@ Set-Location $PSScriptRoot
 $config = Get-Content "../config/variables.json" | ConvertFrom-Json
 $envConfig = $config.$($config.env)
 
-# blue configuration will be the primary region for common resources (RG, ACR, etc.)
+# green configuration will be the primary region for common resources (RG, ACR, etc.)
 
 $rgName = $envConfig.resourceGroup
 $trafficManager = $envConfig.trafficManager
-$location = $envConfig.location_blue
+$location = $envConfig.location_green
 
 Write-Host "Creating RG..."
 az group create --name $rgName --location $location

@@ -5,11 +5,11 @@ Set-Location $PSScriptRoot
 $config = Get-Content "../config/variables.json" | ConvertFrom-Json
 $envConfig = $config.$($config.env)
 
-# blue configuration will be the primary region for common resources (RG, ACR, etc.)
+# green configuration will be the primary region for common resources (RG, ACR, etc.)
 
 $rgName = $envConfig.resourceGroup
-$locationPrimary = $envConfig.location_blue
-$locationSecondary = $envConfig.location_green
+$locationPrimary = $envConfig.location_green
+$locationSecondary = $envConfig.location_blue
 $acrName = $envConfig.containerRegistryName
 
 # RG deploy
