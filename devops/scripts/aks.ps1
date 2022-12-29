@@ -2,7 +2,7 @@ param(
     [Parameter()]
     [String]$clusterParam
 )
-$clusterParam = 'blue'
+$clusterParam = 'green'
 
 $origPath = Get-Location
 $origPath = $origPath.Path
@@ -33,8 +33,8 @@ az group create --name $rgName --location $envConfig.location_green
 Write-Host "Created RG"
 
 Write-Host "Creating AKS cluster..."
-# create AKS cluster and integrate with ACR
-az aks create --resource-group $rgName --name $aksClusterName --node-count 1 --node-vm-size $vmSize --generate-ssh-keys --attach-acr $acrName --location $location
+# create AKS cluster and integrate with ACR. Replicate to all 3 availability zones
+az aks create --resource-group $rgName --name $aksClusterName --node-count 1 --node-vm-size $vmSize --generate-ssh-keys --attach-acr $acrName --location $location --zones 1 2 3
 
 az aks get-credentials --resource-group $rgName --name $aksClusterName --overwrite-existing
 

@@ -10,15 +10,18 @@
 
 # Architecting Azure Kubernetes Service and Azure Container Registry for high availability
 
-This sample codebase demonstrates how to ...
+This sample codebase demonstrates how to set up a highly available microservice architecture using [Azure Kubernetes Service](https://learn.microsoft.com/en-us/azure/aks/intro-kubernetes) (AKS) and [Azure Container Registry](https://learn.microsoft.com/en-us/azure/container-registry/container-registry-intro) (ACR) using a [multiple regions and Availability Zones](https://learn.microsoft.com/en-us/azure/reliability/availability-zones-overview) to maximize fault tolerance.
 <br>
-The motivation behind this guide is... .
+The motivation behind this guide is to serve as a technical example of how to approach business continuity/disaster recovery when using AKS and/or ACR.
 <br>
 This sample builds on top of existing approaches documented by Microsoft, namely:
 
--
+-   [Best practices for business continuity and disaster recovery in Azure Kubernetes Service](https://learn.microsoft.com/en-us/azure/aks/operator-best-practices-multi-region)
+-   [High availability for multitier AKS applications](https://learn.microsoft.com/en-us/azure/architecture/guide/aks/aks-high-availability)
+-   [Cluster operator and developer best practices to build and manage applications on Azure Kubernetes Service](https://learn.microsoft.com/en-US/azure/aks/best-practices)
+-   [https://learn.microsoft.com/en-us/azure/container-registry/container-registry-geo-replication](https://learn.microsoft.com/en-us/azure/container-registry/container-registry-geo-replication)
+-   Additionally, a GitHub repository authored by a Microsoft Global Black Belt is listed in the [Additional Resources](#Additional-Resources) section.
 
-... is a solution that ...
 <br>
 Although the scenario presented in this codebase is simple and contrived, it should be viewed as a foundation for modification and expansion into more complex applications.
 
@@ -81,9 +84,12 @@ _A diagram visually describing..._
 
 ## Potential Use Cases
 
+## Considerations
+- TODOs: Monitoring & Recovery (e.g., when VMSS goes down but cluster is still up; alerting)
+
 ## Additional Resources
 
--   []()
+-   [AKS HA Demo](https://github.com/clarenceb/aks-ha-demo)
 
 Reminder: Issues such as [this one](https://stackoverflow.com/questions/42494853/standard-init-linux-go178-exec-user-process-caused-exec-format-error) may arise if the image is built on a machine of a different OS architecture than the cluster OS architecture.
 The CPU architecture of the VM instance Standard_D2plds_v5 is Arm64.
