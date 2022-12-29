@@ -1,0 +1,129 @@
+name: Microservice CI/CD Workflow
+on:
+    workflow_call:
+        inputs:
+            cluster:
+                description: "Either blue or green"
+                default: "green"
+                required: true
+                type: string
+            # outputs:
+            #     variables:
+            #         description: "Configuration values"
+            #         value: ${{ jobs.configuration.outputs.variables }}
+
+jobs:
+    configuration:
+        uses: ./.github/workflows/config.yml
+
+    containerize:
+        name: "Build Docker image"
+
+        needs: [configuration]
+        runs-on: ubuntu-latest
+        steps:
+            - name: "Checkout Repo"
+              uses: actions/checkout@v2
+
+            - name: "Login via Azure CLI"
+              uses: azure/login@v1
+              with:
+                  creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
+
+            - name: Set up Python
+              uses: actions/setup-python@v1
+              with:
+                  python-version: ${{ fromJson(needs.configuration.outputs.variables).pythonVersion }}
+
+            - name: Get current date
+              id: date
+              run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_ENV
+
+            # update config for prod environment
+            - name: Variable replacement
+              uses: microsoft/variable-substitution@v1
+              with:
+                  files: "./app/api/app_settings.json"
+              env:
+                  version: ${{ env.date }}-${{ github.run_number }}-${{ inputs.cluster }}
+
+            # mask strings before setting env vars, remove quotations
+            - name: "Get Container Registry Credentials"
+              shell: pwsh
+              run: |
+                  $acrUsername =  $(az acr credential show --name ${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }} --query "username").Replace("`"","")
+                  echo "::add-mask::$acrUsername"
+                  echo "acrUsername=$acrUsername" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+
+                  $acrPassword =  $(az acr credential show --name ${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }} --query "passwords[0].value").Replace("`"","")
+                  echo "::add-mask::$acrPassword"
+                  echo "acrPassword=$acrPassword" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+
+            - name: "Registry Authentication"
+              uses: azure/docker-login@v1
+              with:
+                  login-server: ${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }}.azurecr.io
+                  username: ${{ env.acrUsername }}
+                  password: ${{ env.acrPassword }}
+
+            - name: Set up Docker Buildx
+              id: buildx
+              # Use the action from the master, as we've seen some inconsistencies with @v1
+              # Issue: https://github.com/docker/build-push-action/issues/286
+              uses: docker/setup-buildx-action@master
+              with:
+                  install: true
+
+            # build image and push to registry
+            - name: Build production image
+              uses: docker/build-push-action@v3
+              with:
+                  context: ./app
+                  builder: ${{ steps.buildx.outputs.name }}
+                  file: ./app/Dockerfile
+                  # Set the desired build target here
+                  # target: deploy
+                  push: true
+                  tags: ${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }}.azurecr.io/${{ fromJson(needs.configuration.outputs.variables).microserviceApiImageName }}:${{ github.sha }}
+                  # cache-from: type=local,src=/tmp/.buildx-cache
+                  # Note the mode=max here
+                  # More: https://github.com/moby/buildkit#--export-cache-options
+                  # And: https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
+                  # cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+    deploy:
+        name: "Deploy Microservice"
+        needs: [configuration, containerize]
+        runs-on: ubuntu-latest
+        steps:
+            - name: "Checkout Repo"
+              uses: actions/checkout@v2
+
+            - name: "Login via Azure CLI"
+              uses: azure/login@v1
+              with:
+                  creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
+
+            # https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration?tabs=azure-cli#deploy-the-sample-image-from-acr-to-aks
+            # replace yml variables for deploying ACR to AKS
+
+            - name: Variable replacement
+              uses: microsoft/variable-substitution@v1
+              with:
+                  files: "./app/acr-api-deployment.yml"
+              env:
+                  spec.template.spec.containers.0.image: ${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }}.azurecr.io/${{ fromJson(needs.configuration.outputs.variables).microserviceApiImageName }}:${{ github.sha }}
+
+            # deploy to cluster depending on input
+            - name: "Deploy from ACR to AKS"
+              run: |
+                  if ("${{ inputs.cluster }}" -eq "green") {
+                      $aksClusterName = "${{ fromJson(needs.configuration.outputs.variables).aksClusterName_green }}"
+                  }
+                  else {
+                      $aksClusterName = "${{ fromJson(needs.configuration.outputs.variables).aksClusterName_blue }}"
+                  }
+
+                  az aks get-credentials -g ${{ fromJson(needs.configuration.outputs.variables).resourceGroup }} -n $aksClusterName
+                  kubectl apply -f ./app/acr-api-deployment.yml -f ./app/acr-api-ingress-service.yml -f ./app/acr-api-ingress.yml
+              shell: pwsh

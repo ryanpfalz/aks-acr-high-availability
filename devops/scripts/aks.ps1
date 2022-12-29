@@ -2,7 +2,7 @@ param(
     [Parameter()]
     [String]$clusterParam
 )
-$clusterParam = 'green'
+$clusterParam = 'blue'
 
 $origPath = Get-Location
 $origPath = $origPath.Path
@@ -53,4 +53,5 @@ Write-Host "Created AKS cluster"
 # to get external IP of the ingress controller, run:
 az aks get-credentials --resource-group $rgName --name $aksClusterName --overwrite-existing
 $ingressObject = $(kubectl get svc -n $ingressNamespace -ojson | ConvertFrom-Json)
-$ingressIp = $($ingressObject.items | ForEach-Object { $_.status.loadBalancer.ingress.ip })
+$($ingressObject.items | ForEach-Object { $_.status.loadBalancer.ingress.ip })
+# $ingressIp = $($ingressObject.items | ForEach-Object { $_.status.loadBalancer.ingress.ip })

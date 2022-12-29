@@ -1,0 +1,34 @@
+name: API CI/CD Workflow
+on:
+    push:
+        branches:
+            # - "NA" # prevent action
+            - "dev"
+
+jobs:
+
+    # build a single image
+    buildImage:
+        name: "Build Image"
+        uses: ./.github/workflows/container-build-template.yml
+        secrets: inherit
+
+    # deploy the image to cluster 1
+    deployGreen:
+        needs: [buildImage]
+        name: "Deploy to Green Cluster"
+        uses: ./.github/workflows/container-deploy-template.yml
+        with:
+            cluster: green
+            imageTag: needs.buildImage.outputs.imageTag
+        secrets: inherit
+
+    # deploy the image to cluster 2
+    deployBlue:
+        needs: [buildImage]
+        name: "Deploy to Blue Cluster"
+        uses: ./.github/workflows/container-deploy-template.yml
+        with:
+            cluster: blue
+            imageTag: needs.buildImage.outputs.imageTag
+        secrets: inherit

@@ -1,22 +1,16 @@
 name: Microservice CI/CD Workflow
 on:
     workflow_call:
-        inputs:
-            cluster:
-                description: "Either blue or green"
-                default: "green"
-                required: true
-                type: string
-            # outputs:
-            #     variables:
-            #         description: "Configuration values"
-            #         value: ${{ jobs.configuration.outputs.variables }}
+        outputs:
+            imageTag:
+                description: "Configuration values"
+                value: ${{ jobs.build.outputs.imageTag }}
 
 jobs:
     configuration:
         uses: ./.github/workflows/config.yml
 
-    containerize:
+    build:
         name: "Build Docker image"
 
         needs: [configuration]
@@ -66,7 +60,6 @@ jobs:
                   username: ${{ env.acrUsername }}
                   password: ${{ env.acrPassword }}
 
-            # TODO build image
             - name: Set up Docker Buildx
               id: buildx
               # Use the action from the master, as we've seen some inconsistencies with @v1
@@ -75,7 +68,6 @@ jobs:
               with:
                   install: true
 
-            # TODO update
             # build image and push to registry
             - name: Build production image
               uses: docker/build-push-action@v3
@@ -93,39 +85,13 @@ jobs:
                   # And: https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
                   # cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
-    deploy:
-        name: "Deploy Microservice"
-        needs: [configuration, containerize]
-        runs-on: ubuntu-latest
-        steps:
-            - name: "Checkout Repo"
-              uses: actions/checkout@v2
-
-            - name: "Login via Azure CLI"
-              uses: azure/login@v1
-              with:
-                  creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
-
-            # https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration?tabs=azure-cli#deploy-the-sample-image-from-acr-to-aks
-            # replace yml variables for deploying ACR to AKS
-
-            - name: Variable replacement
-              uses: microsoft/variable-substitution@v1
-              with:
-                  files: "./app/acr-api-deployment.yml"
-              env:
-                  spec.template.spec.containers.0.image: ${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }}.azurecr.io/${{ fromJson(needs.configuration.outputs.variables).microserviceApiImageName }}:${{ github.sha }}
-
-            # deploy to cluster depending on input
-            - name: "Deploy from ACR to AKS"
-              run: |
-                  if ("${{ inputs.cluster }}" -eq "green") {
-                      $aksClusterName = "${{ fromJson(needs.configuration.outputs.variables).aksClusterName_green }}"
-                  }
-                  else {
-                      $aksClusterName = "${{ fromJson(needs.configuration.outputs.variables).aksClusterName_blue }}"
-                  }
-
-                  az aks get-credentials -g ${{ fromJson(needs.configuration.outputs.variables).resourceGroup }} -n $aksClusterName
-                  kubectl apply -f ./app/acr-api-deployment.yml -f ./app/acr-api-ingress-service.yml -f ./app/acr-api-ingress.yml
+            - id: set_vars
+              name: "Set output variables"
               shell: pwsh
+              run: |
+                  $imageTag = ${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }}.azurecr.io/${{ fromJson(needs.configuration.outputs.variables).microserviceApiImageName }}:${{ github.sha }}
+                  echo $imageTag
+                  echo "imageTag=$imageTag" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+
+        outputs:
+            imageTag: ${{ env.imageTag }}
