@@ -51,7 +51,7 @@ helm install ingress-nginx ingress-nginx/ingress-nginx --create-namespace --name
 Write-Host "Created AKS cluster"
 
 # to get external IP of the ingress controller, run:
-az aks get-credentials --resource-group $rgName --name $aksClusterName --overwrite-existing
-$ingressObject = $(kubectl get svc -n $ingressNamespace -ojson | ConvertFrom-Json)
-$($ingressObject.items | ForEach-Object { $_.status.loadBalancer.ingress.ip })
-# $ingressIp = $($ingressObject.items | ForEach-Object { $_.status.loadBalancer.ingress.ip })
+# az aks get-credentials --resource-group $rgName --name $aksClusterName --overwrite-existing
+# $ingressObject = $(kubectl get svc -n $ingressNamespace -ojson | ConvertFrom-Json)
+# $($ingressObject.items | ForEach-Object { $_.status.loadBalancer.ingress.ip })
+# # $ingressIp = $($ingressObject.items | ForEach-Object { $_.status.loadBalancer.ingress.ip })

@@ -2,8 +2,8 @@ name: API CI/CD Workflow
 on:
     push:
         branches:
-            # - "NA" # prevent action
-            - "dev"
+            - "NA" # prevent action
+            # - "dev"
 
 jobs:
     # build a single image

@@ -21,3 +21,26 @@ az network traffic-manager profile create --name $trafficManager --resource-grou
 Write-Host "Created traffic manager"
 
 # TODO create endpoints in IaC
+
+function CreateEndpoint {
+    param (
+
+        [string]$ClusterName,
+        [int]$Priority # 1-1000
+    )
+    # get IP
+    az aks get-credentials --resource-group $rgName --name $ClusterName --overwrite-existing
+    $ingressObject = $(kubectl get svc -n $ingressNamespace -ojson | ConvertFrom-Json)
+    $ingressIp = $($ingressObject.items | ForEach-Object { $_.status.loadBalancer.ingress.ip })
+    
+    # create endpoint with IP
+    az network traffic-manager endpoint create --resource-group $rgName --name $ClusterName --profile-name $trafficManager --type "externalEndpoints" --endpoint-status "Enabled" --target $ingressIp --priority $Priority
+    Write-Host "Created Endpoint in $trafficManager for $ingressIp ($ClusterName)"
+
+    # get URL of traffic manager
+    $trafficManagerUrl = $(az network traffic-manager profile show  --resource-group $rgName --name $trafficManager  --query "dnsConfig.fqdn" -o tsv)
+    Write-Host "Traffic Manager URL: $trafficManagerUrl"
+}
+
+CreateEndpoint -ClusterName $envConfig.aksClusterName_green -Priority 1
+CreateEndpoint -ClusterName $envConfig.aksClusterName_blue -Priority 2
