@@ -9,7 +9,7 @@ on:
                 type: string
 
             imageTag:
-                description: "Fully qualified image registry URL + tag"
+                description: "Image tag (SHA hash)"
                 required: true
                 type: string
             # outputs:
@@ -42,7 +42,7 @@ jobs:
               with:
                   files: "./app/acr-api-deployment.yml"
               env:
-                  spec.template.spec.containers.0.image: ${{ inputs.imageTag }}
+                  spec.template.spec.containers.0.image: ${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }}.azurecr.io/${{ fromJson(needs.configuration.outputs.variables).microserviceApiImageName }}:${{ inputs.imageTag }}
 
             # deploy to cluster depending on input
             - name: "Deploy from ACR to AKS"

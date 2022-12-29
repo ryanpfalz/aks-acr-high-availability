@@ -19,7 +19,7 @@ jobs:
         uses: ./.github/workflows/container-deploy-template.yml
         with:
             cluster: green
-            imageTag: ${{ needs.buildImage.outputs.imageTag }}
+            imageTag: ${{ needs.buildImage.outputs.shaTag }}
         secrets: inherit
 
     # deploy the image to cluster 2
@@ -29,5 +29,5 @@ jobs:
         uses: ./.github/workflows/container-deploy-template.yml
         with:
             cluster: blue
-            imageTag: ${{ needs.buildImage.outputs.imageTag }}
+            imageTag: ${{ needs.buildImage.outputs.shaTag }}
         secrets: inherit

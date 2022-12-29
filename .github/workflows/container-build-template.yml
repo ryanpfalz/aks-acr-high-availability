@@ -2,9 +2,9 @@ name: Microservice CI/CD Workflow
 on:
     workflow_call:
         outputs:
-            imageTag:
-                description: "Configuration values"
-                value: ${{ jobs.build.outputs.imageTag }}
+            shaTag:
+                description: "Image tag"
+                value: ${{ jobs.build.outputs.shaTag }}
 
 jobs:
     configuration:
@@ -89,9 +89,10 @@ jobs:
               name: "Set output variables"
               shell: pwsh
               run: |
-                  $imageTag = "${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }}.azurecr.io/${{ fromJson(needs.configuration.outputs.variables).microserviceApiImageName }}:${{ github.sha }}"
-                  echo $imageTag
-                  echo "imageTag=$imageTag" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+                  $shaTag = "${{ github.sha }}"
+                  echo $shaTag
+                  echo "shaTag=$shaTag" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
 
+        # note: GH Actions will prevent output if the value is masked (ACR instance is maked) - pass SHA instead
         outputs:
-            imageTag: ${{ env.imageTag }}
+            shaTag: ${{ env.shaTag }}
