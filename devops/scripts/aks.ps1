@@ -2,7 +2,7 @@ param(
     [Parameter()]
     [String]$clusterParam
 )
-$clusterParam = 'green'
+$clusterParam = 'blue'
 
 $origPath = Get-Location
 $origPath = $origPath.Path
@@ -29,14 +29,14 @@ else {
 
 # RG deploy
 Write-Host "Creating RG..."
-az group create --name $rgName --location $location
+az group create --name $rgName --location $envConfig.location_green
 Write-Host "Created RG"
 
 Write-Host "Creating AKS cluster..."
 # create AKS cluster and integrate with ACR
 az aks create --resource-group $rgName --name $aksClusterName --node-count 1 --node-vm-size $vmSize --generate-ssh-keys --attach-acr $acrName --location $location
 
-az aks get-credentials --resource-group $rgName --name $aksClusterName
+az aks get-credentials --resource-group $rgName --name $aksClusterName --overwrite-existing
 
 # assign role
 $kubeletIdentityId = $(az aks show -g $rgName -n $aksClusterName --query "identityProfile.kubeletidentity.clientId" -o tsv)

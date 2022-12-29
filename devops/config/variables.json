@@ -3,7 +3,7 @@
     "dev": {
         "resourceGroup": "ms-ha-demo",
         "servicePrincipalName": "App1",
-        "containerRegistryName": "mshaacr",
+        "containerRegistryName": "mshaacr2",
         "location_green": "eastus2",
         "location_blue": "centralus",
         "aksClusterName_green": "mshaaksgreen",

@@ -25,7 +25,7 @@ Write-Host "Creating Container Registry..."
 az acr create --name $acrName --resource-group $rgName --location $locationPrimary --sku Premium --zone-redundancy Enabled --admin-enabled true
 
 # alternatively set this on map in portal
-az acr replication create --resource-group $rgName --location $locationSecondary
+az acr replication create --resource-group $rgName --location $locationSecondary --registry $acrName 
 
 Write-Host "Created Container Registry"
 
