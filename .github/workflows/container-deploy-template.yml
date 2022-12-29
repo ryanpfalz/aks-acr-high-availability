@@ -12,10 +12,6 @@ on:
                 description: "Image tag (SHA hash)"
                 required: true
                 type: string
-            # outputs:
-            #     variables:
-            #         description: "Configuration values"
-            #         value: ${{ jobs.configuration.outputs.variables }}
 
 jobs:
     configuration:
@@ -36,7 +32,6 @@ jobs:
 
             # https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration?tabs=azure-cli#deploy-the-sample-image-from-acr-to-aks
             # replace yml variables for deploying ACR to AKS
-
             - name: Variable replacement
               uses: microsoft/variable-substitution@v1
               with:

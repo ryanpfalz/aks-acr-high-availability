@@ -2,7 +2,7 @@ name: API CI/CD Workflow
 on:
     push:
         branches:
-            - "NA" # prevent action
+            - "NA"
             # - "dev"
 
 jobs:
