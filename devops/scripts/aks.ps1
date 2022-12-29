@@ -2,7 +2,7 @@ param(
     [Parameter()]
     [String]$clusterParam
 )
-$clusterParam = 'blue'
+$clusterParam = 'green'
 
 $origPath = Get-Location
 $origPath = $origPath.Path
@@ -51,5 +51,6 @@ helm install ingress-nginx ingress-nginx/ingress-nginx --create-namespace --name
 Write-Host "Created AKS cluster"
 
 # to get external IP of the ingress controller, run:
-# $ingressObject = $(kubectl get svc -n $ingressNamespace -ojson | ConvertFrom-Json)
-# $ingressIp = $($ingressObject.items | ForEach-Object { $_.status.loadBalancer.ingress.ip })
+az aks get-credentials --resource-group $rgName --name $aksClusterName --overwrite-existing
+$ingressObject = $(kubectl get svc -n $ingressNamespace -ojson | ConvertFrom-Json)
+$ingressIp = $($ingressObject.items | ForEach-Object { $_.status.loadBalancer.ingress.ip })
