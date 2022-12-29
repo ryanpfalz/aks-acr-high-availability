@@ -89,7 +89,7 @@ jobs:
               name: "Set output variables"
               shell: pwsh
               run: |
-                  $imageTag = ${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }}.azurecr.io/${{ fromJson(needs.configuration.outputs.variables).microserviceApiImageName }}:${{ github.sha }}
+                  $imageTag = "${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }}.azurecr.io/${{ fromJson(needs.configuration.outputs.variables).microserviceApiImageName }}:${{ github.sha }}"
                   echo $imageTag
                   echo "imageTag=$imageTag" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
 
