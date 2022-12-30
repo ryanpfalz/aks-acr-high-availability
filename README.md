@@ -30,6 +30,7 @@ Although the scenario presented in this codebase is simple and contrived, it sho
 
 -   [An Azure Subscription](https://azure.microsoft.com/en-us/free/) - for hosting cloud infrastructure
 -   [Az CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) - for deploying Azure infrastructure as code
+-   [Python](https://www.python.org/downloads/) - for Python development
 -   (Optional) [A GitHub Account](https://github.com/join) - for deploying code via GitHub Actions
 
 ## Running this sample
