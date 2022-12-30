@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: py-api-deployment
+    labels:
+        app: py-api
+spec:
+    replicas: 2
+    # type: LoadBalancer
+    selector:
+        matchLabels:
+            app: py-api
+    template:
+        metadata:
+            labels:
+                app: py-api
+        spec:
+            containers:
+                - name: py-api
+                  image: <replace acrname.azurecr.io/microserviceApiImageName:github.sha>
+                  #   image: mshaacr.azurecr.io/mshademoapi:ea818dea51f391bdd30dd8119f1bb43cd1db6754
+                  ports:
+                      #   - containerPort: 80
+                      - containerPort: 8080
+                        name: py-api-port

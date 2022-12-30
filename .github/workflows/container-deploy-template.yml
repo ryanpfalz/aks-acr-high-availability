@@ -1,0 +1,54 @@
+name: Microservice CI/CD Workflow
+on:
+    workflow_call:
+        inputs:
+            cluster:
+                description: "Either blue or green"
+                default: "green"
+                required: true
+                type: string
+
+            imageTag:
+                description: "Image tag (SHA hash)"
+                required: true
+                type: string
+
+jobs:
+    configuration:
+        uses: ./.github/workflows/config.yml
+
+    deploy:
+        name: "Deploy Microservice"
+        needs: [configuration]
+        runs-on: ubuntu-latest
+        steps:
+            - name: "Checkout Repo"
+              uses: actions/checkout@v2
+
+            - name: "Login via Azure CLI"
+              uses: azure/login@v1
+              with:
+                  creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
+
+            # https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration?tabs=azure-cli#deploy-the-sample-image-from-acr-to-aks
+            # replace yml variables for deploying ACR to AKS
+            - name: Variable replacement
+              uses: microsoft/variable-substitution@v1
+              with:
+                  files: "./app/acr-api-deployment.yml"
+              env:
+                  spec.template.spec.containers.0.image: ${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }}.azurecr.io/${{ fromJson(needs.configuration.outputs.variables).microserviceApiImageName }}:${{ inputs.imageTag }}
+
+            # deploy to cluster depending on input
+            - name: "Deploy from ACR to AKS"
+              run: |
+                  if ("${{ inputs.cluster }}" -eq "green") {
+                      $aksClusterName = "${{ fromJson(needs.configuration.outputs.variables).aksClusterName_green }}"
+                  }
+                  else {
+                      $aksClusterName = "${{ fromJson(needs.configuration.outputs.variables).aksClusterName_blue }}"
+                  }
+
+                  az aks get-credentials -g ${{ fromJson(needs.configuration.outputs.variables).resourceGroup }} -n $aksClusterName
+                  kubectl apply -f ./app/acr-api-deployment.yml -f ./app/acr-api-ingress-service.yml -f ./app/acr-api-ingress.yml
+              shell: pwsh

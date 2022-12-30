@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: py-api-service
+    labels:
+        app: py-api
+spec:
+    type: ClusterIP # for ingress controller to reference
+    ports:
+        - port: 80
+          targetPort: py-api-port
+    selector:
+        app: py-api

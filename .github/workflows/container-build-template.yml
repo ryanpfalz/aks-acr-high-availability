@@ -1,0 +1,89 @@
+name: Microservice CI/CD Workflow
+on:
+    workflow_call:
+        outputs:
+            shaTag:
+                description: "Image tag"
+                value: ${{ jobs.build.outputs.shaTag }}
+
+jobs:
+    configuration:
+        uses: ./.github/workflows/config.yml
+
+    build:
+        name: "Build Docker image"
+
+        needs: [configuration]
+        runs-on: ubuntu-latest
+        steps:
+            - name: "Checkout Repo"
+              uses: actions/checkout@v2
+
+            - name: "Login via Azure CLI"
+              uses: azure/login@v1
+              with:
+                  creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
+
+            - name: Set up Python
+              uses: actions/setup-python@v1
+              with:
+                  python-version: ${{ fromJson(needs.configuration.outputs.variables).pythonVersion }}
+
+            - name: Get current date
+              id: date
+              run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_ENV
+
+            # update config for prod environment
+            - name: Variable replacement
+              uses: microsoft/variable-substitution@v1
+              with:
+                  files: "./app/api/app_settings.json"
+              env:
+                  version: ${{ env.date }}-${{ github.run_number }}
+
+            # mask strings before setting env vars, remove quotations
+            - name: "Get Container Registry Credentials"
+              shell: pwsh
+              run: |
+                  $acrUsername =  $(az acr credential show --name ${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }} --query "username").Replace("`"","")
+                  echo "::add-mask::$acrUsername"
+                  echo "acrUsername=$acrUsername" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+
+                  $acrPassword =  $(az acr credential show --name ${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }} --query "passwords[0].value").Replace("`"","")
+                  echo "::add-mask::$acrPassword"
+                  echo "acrPassword=$acrPassword" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+
+            - name: "Registry Authentication"
+              uses: azure/docker-login@v1
+              with:
+                  login-server: ${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }}.azurecr.io
+                  username: ${{ env.acrUsername }}
+                  password: ${{ env.acrPassword }}
+
+            - name: Set up Docker Buildx
+              id: buildx
+              uses: docker/setup-buildx-action@master
+              with:
+                  install: true
+
+            # build image and push to registry
+            - name: Build production image
+              uses: docker/build-push-action@v3
+              with:
+                  context: ./app
+                  builder: ${{ steps.buildx.outputs.name }}
+                  file: ./app/Dockerfile
+                  push: true
+                  tags: ${{ fromJson(needs.configuration.outputs.variables).containerRegistryName }}.azurecr.io/${{ fromJson(needs.configuration.outputs.variables).microserviceApiImageName }}:${{ github.sha }}
+
+            - id: set_vars
+              name: "Set output variables"
+              shell: pwsh
+              run: |
+                  $shaTag = "${{ github.sha }}"
+                  echo $shaTag
+                  echo "shaTag=$shaTag" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+
+        # note: GH Actions will prevent output if the value is masked (ACR instance is maked) - pass SHA instead
+        outputs:
+            shaTag: ${{ env.shaTag }}
