@@ -3,7 +3,7 @@ on:
     push:
         branches:
             - "NA"
-            # - "dev"
+            # - "dev/updates"
 
 jobs:
     # build a single image
