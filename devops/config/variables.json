@@ -8,7 +8,7 @@
         "location_blue": "centralus",
         "aksClusterName_green": "mshaaksgreen",
         "aksClusterName_blue": "mshaaksblue",
-        "trafficManager": "mshaendpoint",
+        "frontDoor": "mshafrontdoor",
         "pythonVersion": "3.9",
         "microserviceApiImageName": "mshademoapi"
     }
